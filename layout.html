@@ -1,0 +1,48 @@
+<template name="mainLayout">
+  <!--[if lt IE 9]>
+    <p class="browser-warning"><strong><i class="icon-exclamation-sign"></i> Warning</strong> - You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/" target="_blank">upgrade your browser</a> to properly view this website.</p>
+  <![endif]-->
+
+  {{> yield region="header"}}
+
+  <div class="container">
+    {{> yield}}
+  </div>
+
+  {{> yield region="footer"}}
+</template>
+
+
+
+
+<template name="header">
+
+  <nav class="navbar navbar-default navbar-static-top" role="navigation">
+    <div class="container">
+
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{pathFor 'home'}}">Finance News</a>
+      </div>
+
+      </div>
+
+  </nav>
+
+</template>
+
+
+<template name="footer">
+  <footer>
+    <div class="container">
+      <p class="text-center text-muted">
+        &copy; Copyright {{ siteTitle }}
+      </p>
+    </div>
+  </footer>
+</template>

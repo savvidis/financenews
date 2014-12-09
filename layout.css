@@ -1,0 +1,27 @@
+/* CSS declarations go here */
+body {
+    font-family: Verdana,Geneva,sans-serif;
+    font-size: 10pt;
+    color: #828282;
+}
+
+.linkrow {
+	padding: 10px;
+	font-family: Verdana,Geneva,sans-serif;
+font-size: 10pt;
+}
+
+.source {
+	font-family: Verdana,Geneva,sans-serif;
+font-size: 8pt;
+color: #828282;
+}
+
+.newslist {
+	padding:30px;
+}
+
+a:link {
+	color: #000;
+	text-decoration: none;
+}
