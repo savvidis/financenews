@@ -1,9 +1,12 @@
 Meteor.startup(function () {
- var cheerio = Meteor.npmRequire('cheerio');
 
+});
 
- Meteor.methods({
+Meteor.methods({
   getHeadlines : function (argument) {
+    this.unblock();
+  var cheerio = Meteor.npmRequire('cheerio');
+
  // subDate, subDateCssSelector, numComments,commentCssSelector, score = (1+(comments/10))/ ((date - datenow)/1000)  
     var sources = [
     {source:'efinancialnews',url:'http://www.efinancialnews.com',UrlCssSelector:'#most-read-content > ul > li > h4 > a:nth-child(2)',subDateCssSelector:"",commentCssSelector:""},
@@ -67,9 +70,6 @@ return list;
     var summary = ('#storyContent > p:nth-child(2)').text(); 
     }
   });
-
-});
-
 
 
 
