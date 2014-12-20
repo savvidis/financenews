@@ -8,6 +8,9 @@ Meteor.startup(function () {
     var sources = [
     {source:'efinancialnews',url:'http://www.efinancialnews.com',UrlCssSelector:'#most-read-content > ul > li > h4 > a:nth-child(2)',subDateCssSelector:"",commentCssSelector:""},
     {source:'economist',url:'http://www.economist.com',UrlCssSelector:'#latest-updates > article > p > a',subDateCssSelector:"",commentCssSelector:""},
+    {source:'creditbubblestocks',url:'http://www.creditbubblestocks.com',UrlCssSelector:'div.post > h3 > a',subDateCssSelector:"",commentCssSelector:""},
+    {source:'viennacapitalist',url:'http://viennacapitalist.com/',UrlCssSelector:'article.post > a',subDateCssSelector:"",commentCssSelector:""},
+    {source:'y0ungmoney',url:'http://y0ungmoney.blogspot.gr/',UrlCssSelector:'div.post > h3 > a',subDateCssSelector:"",commentCssSelector:""},
     {source:'ft.com',url:'http://www.ft.com/home/europe',UrlCssSelector: '.ft-list-item > a',subDateCssSelector:"",commentCssSelector:""}
  ];
  var list = [];
@@ -20,7 +23,14 @@ Meteor.startup(function () {
   var datenow = Date();
   var sourceurl = newsource.url;
   resp.each(function (i,element) {
-    var title = $(element).text(); 
+    var hastitle = function () {
+      if($(element).text()) {
+        return $(element).text();}
+        else {
+          return element.attribs.href();
+        }
+      };
+    var title = hastitle();
     var correcturl;
     if (element.attribs.href.substring(0,4) != 'http') {
       correcturl = sourceurl + element.attribs.href; }
