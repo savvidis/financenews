@@ -1,0 +1,21 @@
+<template name="home">
+ <div class="newslist">
+  {{#each headlines}}
+  	{{>url}}
+  {{/each}}	
+ </div>
+</template>
+
+
+<template name="url">
+	<div class="linkrow row">
+		<div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
+			<a href="{{url}}" title="">{{title}}</a> <span class="small source">({{source}} - </span> <span class="small source">{{hours}} hours)</span>
+		</div>
+	</div>
+</template>
+
+
+<template name="comments">
+	{{title}}
+</template>

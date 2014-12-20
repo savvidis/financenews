@@ -7,11 +7,11 @@ meteor-platform
 autopublish
 insecure
 http
-underscore
 meteorhacks:npm
 
 
 npm-container
 iron:router
 mizzao:bootstrap-3
+underscore
 
