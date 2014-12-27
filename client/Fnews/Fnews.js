@@ -1,4 +1,4 @@
-Meteor.call('getHeadlines', function(error,result){
+Meteor.call('getHeadlines',function(error,result){
 	if (error) {console.log(error);}
 	else {
 		console.log("Updated at" + Date.now());
@@ -6,13 +6,13 @@ Meteor.call('getHeadlines', function(error,result){
 
 });
 
-Meteor.call('cleanPosts', function(error,result){
-	if (error) {console.log(error);}
-	else {
-		console.log("removed at" + Date.now());
-	}
+// Meteor.call('cleanPosts', function(error,result){
+// 	if (error) {console.log(error);}
+// 	else {
+// 		console.log("removed at" + Date.now());
+// 	}
 
-});
+// });
 
 Handlebars.registerHelper('plusOne', function(number) {
     return number + 1;

@@ -1,4 +1,4 @@
 Meteor.publish('newsPosts', function(options) {
-  console.log('publish');
+  console.log('published');
   return Posts.find({},options);
 });
