@@ -1,22 +1,7 @@
-Meteor.call('getHeadlines',function(error,result){
-	if (error) {console.log(error);}
-	else {
-		console.log("Updated at" + Date.now());
-	}
 
-});
 
-// Meteor.call('cleanPosts', function(error,result){
-// 	if (error) {console.log(error);}
-// 	else {
-// 		console.log("removed at" + Date.now());
-// 	}
 
-// });
 
-Handlebars.registerHelper('plusOne', function(number) {
-    return number + 1;
-});
 
 
 // Template.home.rendered = function () {
@@ -25,6 +10,12 @@ Handlebars.registerHelper('plusOne', function(number) {
 // 		return index += 1;
 // 	};
 // };
+
+Template.summary.helpers({
+	content: function () {
+		return this.PostContent;
+	}
+});
 
 Template.home.helpers({
 	'headlines': function() {

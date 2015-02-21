@@ -9,9 +9,11 @@ http
 meteorhacks:npm
 
 
-npm-container
 iron:router
 mizzao:bootstrap-3
 underscore
 
 sacha:spin
+
+
+npm-container

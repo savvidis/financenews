@@ -10,8 +10,8 @@
 <template name="url">
 	<div class="linkrow row">
 		<div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
-			<a href="{{url}}" title="">{{index}}. {{title}}</a> <span class="small source">({{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}}) </span>
-			<div class="subtext"><span>{{score}} points | </span><span>Comments : {{CommentsNumber}}</span></div>
+			<a class="mainurl" href="{{pathFor 'content'}}" title="">{{title}}</a> <span class="small source">({{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}}) </span>
+			<div class="subtext"><span>{{score}} points | </span><span>Comments : {{CommentsNumber}}| </span><a href="{{url}}" title="More">more</a></div>
 		</div>
 	</div>
 </template>
@@ -19,5 +19,19 @@
 
 <template name="comments">
 	{{title}}
+</template>
+
+<template name="summary">
+<div class="row">
+	<div class="intitle col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		<h3>{{title}}<span class="insource">{{source}}</span></h3>
+	</div>
+
+</div>
+<div class="row">
+	<div class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+	 	{{{content}}}
+	 </div>
+</div>
 </template>
 
