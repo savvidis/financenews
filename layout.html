@@ -1,11 +1,13 @@
 <template name="mainLayout">
+
+<!-- /header -->
   <!--[if lt IE 9]>
     <p class="browser-warning"><strong><i class="icon-exclamation-sign"></i> Warning</strong> - You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/" target="_blank">upgrade your browser</a> to properly view this website.</p>
   <![endif]-->
 
   {{> yield region="header"}}
 
-  <div class="container-fluid maincontainer">
+  <div class="container-fluid">
     {{> yield}}
   </div>
 
@@ -16,16 +18,17 @@
 
 
 <template name="header">
-  <nav class="navbar navbar-default navbar-static-top" role="navigation">
+  <nav style="background-color: rgba(248, 248, 248, 0); margin-bottom:0px;
+    border-color:rgba(255, 255, 255, 0);" class="navbar navbar-default navbar-static-top" role="navigation">
     <div class="container">
 
       <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
-          <span class="sr-only">Toggle navigation</span>
+  <!--       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
+          <span class="sr-only">Update</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
-        </button>
+        </button> -->
         <a class="navbar-brand" href="{{pathFor 'home'}}">Finance News</a>
       </div>
 

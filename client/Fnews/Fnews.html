@@ -1,5 +1,5 @@
 <template name="home">
- <div class="newslist">
+ <div class="leaderboard ">
   {{#each headlines}}
   	{{>url}}
   {{/each}}	
@@ -8,12 +8,21 @@
 
 
 <template name="url">
-	<div class="linkrow row">
-		<div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
-			<a class="mainurl" href="{{pathFor 'content'}}" title="">{{title}}</a> <span class="small source">({{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}}) </span>
-			<div class="subtext"><span>{{score}} points | </span><span>Comments : {{CommentsNumber}}| </span><a href="{{url}}" title="More">more</a></div>
+<a class="mainurl" href="{{pathFor 'content'}}" title="">
+	<div class="player row">
+		<div class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+		
+			<div class="name"><span class="counter"></span>{{shorttitle}}</div>
+			<div class="subtext">
+			<span class="small source">({{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}}) |</span>
+			
+				<span>{{score}} points | </span><span>Comments: {{CommentsNumber}}| </span>
+				<span>Minutes: {{Min}}| </span><a href="{{url}}" title="More">more</a>
+				</div>
 		</div>
+	 
 	</div>
+		</a>
 </template>
 
 
@@ -23,15 +32,36 @@
 
 <template name="summary">
 <div class="row">
-	<div class="intitle col-xs-12 col-sm-12 col-md-12 col-lg-12">
+	<div class="intitle col-xs-11 col-sm-11 col-md-11 col-lg-11	">
 		<h3>{{title}}<span class="insource">{{source}}</span></h3>
 	</div>
 
 </div>
 <div class="row">
-	<div class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+
+	<div class="col-xs-11 col-sm-11 col-md-10 col-lg-10">
 	 	{{{content}}}
 	 </div>
+	<div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+
+				<div class="talk-hero__tools">
+					<div class="talk-hero__tools__list">
+						<div class="talk-hero__tools__list__actions module">
+							<a class="talk-hero__tools__tool watch-later-button" href="{{pathFor 'home'}}">
+								<i class="icon icon_circle-rate talk-hero__tools__icon"></i>
+							
+							</a>
+							<a class="talk-hero__tools__tool favorite-button" href="{{pathFor 'home'}}">
+								<i class="icon icon_circle-favorite talk-hero__tools__icon favorite-button__icon"></i>
+						
+							</a>
+							<!-- <a class="talk-hero__tools__tool download-button" href="{{pathFor 'home'}}">
+								<i class="icon icon_action-organize talk-hero__tools__icon"></i>
+							</a> -->
+						</div>
+					</div>
+				</div>
+	</div>	 
 </div>
 </template>
 

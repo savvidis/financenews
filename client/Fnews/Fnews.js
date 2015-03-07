@@ -1,9 +1,4 @@
 
-
-
-
-
-
 // Template.home.rendered = function () {
 // 	var index = 0 ;
 // 	function counterindex() {
@@ -21,13 +16,11 @@ Template.home.helpers({
 	'headlines': function() {
 		return this.posts;
 	},
-
-			});
+});
 
 Template.url.helpers({
-	// addindex : function(counterindex){
-	// 	this.index +=1;
-	// 	return this.index;
+	'shorttitle': function() {
+		return this.title.substring(0,70);
+	},
+});
 
-	// 	}
-	});

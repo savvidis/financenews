@@ -8,21 +8,24 @@ Meteor.startup(function() {
 
 Meteor.methods({
   getHeadlines: function(argument) {
-    var concurrency = 5;
-    var Fiber2 = Meteor.npmRequire('fibers');
-    var Fiber =  Meteor.npmRequire('fibers');
+    Fiber = Meteor.npmRequire('fibers');
+    var concurrency = 10;
 
+    function callback(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        var info = JSON.parse(body);
+        console.log(info.stargazers_count + " Stars");
+        console.log(info.forks_count + " Forks");
+      }
+    }
     var list = [];
     async.series([
       function(callback) {
         async.eachLimit(sources, concurrency, function(newsource, next, err) {
-        try {
-          scrapHeadlines(newsource);
-        } 
-        catch (e) {
-           console.log("Uh-oh, Error!: " + e + "\n using " + newsource.source);
-        }
+        if (err) throw err;
+        scrapHeadlines(newsource);
         next();
+
         });
         // _.each(sources,function (newsource) {
         //  scrapHeadlines(newsource);
@@ -35,7 +38,7 @@ Meteor.methods({
           'date': new Date()
         }, function() {
           console.log("Update done");
-          return true;
+
         });
       }
     ]);
@@ -52,43 +55,20 @@ Meteor.methods({
           'Cache-Control': 'max-age=0'
         }
       };
-    
 
-      try {
-      // Fiber(function() { 
-        var result = HTTP.call("GET", newsource.url,
-                                {headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}}
-        );
+      request(options, function(err, response, body) {
+        if (err) {
+          console.log("Uh-oh, ScrapeNexts Error!: " + err + " using " + url);
+          errors.nexts.push(url);
+        }
 
-       body = result.content;
-        
-       async.series([
+        async.series([
           function(callback) {
             $ = cheerio.load(body);
             callback();
           },
           function(callback) {
-            function geturls (csslist) {
-              if (typeof csslist === 'string') {
-                console.log(typeof csslist,"here string");
-                return $(csslist);
-                  }
-              if (typeof csslist === 'object') {
-                console.log(typeof csslist,"here obj");
-                var urllist = [];
-                for (var i = 0; i < csslist.length; i++) {
-                  $(csslist[i]).each(function(i, elem) {
-                    urllist.push(elem);
-                  });
-
-                }
-                return urllist;
-                }
-            }
-
-
-           var resp = geturls(newsource.UrlCssSelector);
+            var resp = $(newsource.UrlCssSelector);
 
 
             var index = 0;
@@ -100,7 +80,7 @@ Meteor.methods({
             // });
 
 
-            async.eachLimit(resp, concurrency, function(element, next, err) {
+            async.eachLimit(resp, concurrency, function(element, next) {
               if (err) {
                 console.error(err);
               }
@@ -111,17 +91,8 @@ Meteor.methods({
 
           }
         ]);
+      });
 
-        return true;
-         // }).run();
-
-
-      } catch (e) {
-        // Got a network error, time-out or HTTP error in the 400 or 500 range.
-          console.log("Uh-oh, ScrapeNexts Error!: " + e + " using " + newsource.url);
-        return false;
-        
-      }
     }
 
     function ObjFromHeadline(element, index, $, newsource) {
@@ -130,37 +101,24 @@ Meteor.methods({
       var sourceurl = newsource.url;
 
       // console.log(element);
-      // Fiber2(function() { 
-      function hastitle (element) {
-        var html = $(element).html();
-        var $$ = cheerio.load(html); 
-        $$('.time').remove();
-        $$('.feed_text').remove();
-        $$.root().text();
-        if($$.root().text()) {
-          return $$.root().text().trim();}
-          else {
-            return "No title available";
-          }
+      // Fiber(function() { 
+      var hastitle = function() {
+        if ($(element).text()) {
+          return $(element).text().trim();
+        } else {
+          return element.attribs.href();
         }
-      // Scoring must take place here  element.attribs.href
+      };
+      // Scoring must take place here 
       // eg. Comments, Source, Gravity     
-      var title = hastitle(element); 
-      function URLcorrection (url) {
+      var title = hastitle();
       var correcturl;
-      if (url.substring(0, 4) != 'http') {
+      if (element.attribs.href.substring(0, 4) != 'http') {
         correcturl = sourceurl + element.attribs.href;
       } else {
         correcturl = element.attribs.href;
       }
-
-      if (correcturl.substring(0, 9) === 'http://m.') {
-         correcturl = "http://www." + correcturl.substring(9);
-      }
-       return correcturl;
-      }
-      var correcturl = URLcorrection(element.attribs.href);
-      console.log(index + ".Title : " + title + '\n' + '  URL : ' + correcturl);
+      console.log(index + ".Title : " + title + '\n' + '  URL : ' + element.attribs.href);
       console.log("");
       var obj = {
         'type': newsource.type,
@@ -181,11 +139,12 @@ Meteor.methods({
     // --------------
 
     function filePost(obj, newsource) {
-      Fiber2(function() {
+      Fiber(function() {
         findpost = null;
         async.series([
           function(callback) {
-            findpost = Posts.findOne({$or: [ {'url': obj.url},{'title':obj.title}] 
+            findpost = Posts.findOne({
+              'url': obj.url
             });
             callback();
           },
@@ -205,26 +164,12 @@ Meteor.methods({
               async.series([
                 function(callback) {
                   extracted = extraxtData(obj, newsource);
-                  var error ={};
-                  error.content = (extracted.PostContent === 'ERROR Didnt get content');
-                  error.url = !extracted.url;
-                  error.title = !extracted.title;
-                  console.log("url error:",error.url," title error:",error.title," content error:",error.content);
-                  callback(null,error);
-                }],
-                function(err,error) {
-                  error = error[0];
-                  if (error.content || error.url || error.title ) {
-                     console.log("There was an error I cannot insert"); 
-                     console.log("=== === === === === === === === === === === === === === ");
-                     console.log('\n');
-                     return false;
-                   }
-                  else {
-                    insertPost(extracted);}
-
-                });
-          
+                  callback();
+                },
+                function(callback) {
+                  insertPost(extracted);
+                }
+              ]);
             } else {
               console.log("++++ Post exist ? ", !!findpost);
             }
@@ -237,11 +182,8 @@ Meteor.methods({
     }
 
     function insertPost(obj) {
-      return Posts.insert(obj, function(err, res) {
-        if (err) throw err;
-        console.log('entered ',res);
-
-      });
+      Posts.insert(obj);
+      console.log('entered');
 
     }
 
@@ -250,20 +192,16 @@ Meteor.methods({
     // --------------
 
     function extraxtData(obj, newsource) {
-       
-    try {
-        var result = Meteor.http.call('GET', obj.url,
-         {
+        var result = Meteor.http.call('GET', obj.url, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
             'Cache-Control': 'max-age=0'
           }
         });
-
         $ = cheerio.load(result.content);
         obj.PostDate = new Date(Date.parse(treatDate(newsource.subDateCssSelector, obj)));
         console.log(getString(newsource.commentCssSelector));
-        obj.CommentsNumber = !!(getString(newsource.commentCssSelector).match(/\d+/)) ? getString(newsource.commentCssSelector).replace('One', 1).match(/\d+/)[0] : "";
+        obj.CommentsNumber = !!(getString(newsource.commentCssSelector).match(/\d+/)) ? getString(newsource.commentCssSelector).match(/\d+/)[0] : "";
         obj.PostContent = getHTML(newsource.contentCssSelector);
         obj.Words = getWords(newsource.contentCssSelector);
         obj.Min = (obj.Words.length / 180).toFixed(1);
@@ -281,13 +219,6 @@ Meteor.methods({
         console.log("======================End============================");
         console.log('\n \n');
         return obj;
-
-      } catch (e) {
-        // Got a network error, time-out or HTTP error in the 400 or 500 range.
-          console.log("Uh-oh, ScrapeNexts Error!: " + e + " using " + newsource.url);
-        return false;
-        
-      }
       }
 
     //Helper
@@ -311,13 +242,6 @@ Meteor.methods({
     function treatContent(html) {
       $ = cheerio.load(html);
 
-      $('.related-links-container').remove();
-      $('.popular-video').remove();
-      $('.feed-footer-wrapper').remove();
-      $('.source').remove();
-      $('.caption').remove();
-
-      $('.storyvideo').remove();
       $('.shareArt').remove();
       $('.sharedaddy').remove();
       $('.main-content-container').remove();
@@ -416,24 +340,20 @@ Meteor.methods({
   },
 
   cleanagent: function() {
-    Posts._ensureIndex({
+    db.posts.ensureIndex({
       title: 1
     }, {
       unique: true,
       dropDups: true
-    }, function () {return true;});
-
-    Posts._ensureIndex({
-      url: 1
+    });
+  },
+  updat: function() {
+    db.posts.ensureIndex({
+      title: 1
     }, {
       unique: true,
       dropDups: true
     });
-
-    Posts.remove( { url: {$exists: false} } );
-  },
-  updat: function() {
-    
   },
   cleanPosts: function() {
     var removeObj = {
