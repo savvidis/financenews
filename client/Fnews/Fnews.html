@@ -1,9 +1,21 @@
 <template name="home">
  <div class="leaderboard ">
-  {{#each headlines}}
+  {{#each posts}}
   	{{>url}}
   {{/each}}	
  </div>
+ 	<div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+				<div class="talk-hero__tools">
+					<div class="talk-hero__tools__list">
+						<div class="talk-hero__tools__list__actions module scrap">
+							<a class="talk-hero__tools__tool watch-later-button" href="">
+								<i class="icon icon_circle-rate talk-hero__tools__icon"></i>
+							</a>
+						</div>
+					</div>
+				</div>
+	</div>
+ <a class="load-more" href="{{nextPath}}">Load more</a>
 </template>
 
 
@@ -14,8 +26,8 @@
 		
 			<div class="name"><span class="counter"></span>{{shorttitle}}</div>
 			<div class="subtext">
-			<span class="small source">({{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}}) |</span>
-			
+			<span class="small source">{{source}} - </span> <span class="small source">{{#if minutesorhours}} {{minutes}} minutes {{else}} {{#if hoursordays }} {{hours}} hours {{else}} {{days}} days {{/if}}{{/if}} |</span>
+				<span>{{ minutes}} {{minutesorhours}}</span>
 				<span>{{score}} points | </span><span>Comments: {{CommentsNumber}}| </span>
 				<span>Minutes: {{Min}}| </span><a href="{{url}}" title="More">more</a>
 				</div>
@@ -47,17 +59,14 @@
 				<div class="talk-hero__tools">
 					<div class="talk-hero__tools__list">
 						<div class="talk-hero__tools__list__actions module">
-							<a class="talk-hero__tools__tool watch-later-button" href="{{pathFor 'home'}}">
-								<i class="icon icon_circle-rate talk-hero__tools__icon"></i>
+							<a class="talk-hero__tools__tool watch-later-button backpos" href="#">
+								<i class="icon icon_circle-rate talk-hero__tools__icon backpos"></i>
 							
 							</a>
 							<a class="talk-hero__tools__tool favorite-button" href="{{pathFor 'home'}}">
 								<i class="icon icon_circle-favorite talk-hero__tools__icon favorite-button__icon"></i>
 						
 							</a>
-							<!-- <a class="talk-hero__tools__tool download-button" href="{{pathFor 'home'}}">
-								<i class="icon icon_action-organize talk-hero__tools__icon"></i>
-							</a> -->
 						</div>
 					</div>
 				</div>

@@ -1,6 +1,6 @@
 Posts = new Meteor.Collection('posts');
-
-Ground.Collection(Posts) ;
+// Posts._ensureIndex({field: 1});
+// Ground.Collection(Posts) ;
 
 Posts.allow({
   update: function () {return true;},

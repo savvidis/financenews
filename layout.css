@@ -46,7 +46,7 @@ color: #828282;
 font-family: Verdana, Geneva, sans-serif;
 font-size: 7pt;
 color: #828282;
-padding-left: 40px; 
+padding-left: 0px; 
 }
 
 
@@ -61,31 +61,6 @@ padding-left: 40px;
     font-weight: normal;
     font-style: normal;
 }
-@font-face {
-    font-family: "Helvetica Neue Custom";
-    src: url("http://assets2.tedcdn.com/fonts/hn-045-n.eot");
-    src: url("http://assets2.tedcdn.com/fonts/hn-045-n.eot?#iefix") format("embedded-opentype"), url("http://assets2.tedcdn.com/fonts/hn-045-n.woff") format("woff"), url("http://assets2.tedcdn.com/fonts/hn-045-n.ttf") format("truetype");
-    font-weight: 300;
-}
-@font-face {
-    font-family: "Helvetica Neue Custom";
-    src: url("http://assets2.tedcdn.com/fonts/hn-055-n.eot");
-    src: local("Helvetica Neue"), url("http://assets2.tedcdn.com/fonts/hn-055-n.eot?#iefix") format("embedded-opentype"), url("http://assets2.tedcdn.com/fonts/hn-055-n.woff") format("woff"), url("http://assets2.tedcdn.com/fonts/hn-055-n.ttf") format("truetype");
-    font-weight: 400;
-}
-@font-face {
-    font-family: "Helvetica Neue Custom";
-    src: url("http://assets2.tedcdn.com/fonts/hn-075-n.eot");
-    src: local("Helvetica Neue Bold"), local("Helvetica Neue"), url("http://assets2.tedcdn.com/fonts/hn-075-n.eot?#iefix") format("embedded-opentype"), url("http://assets2.tedcdn.com/fonts/hn-075-n.woff") format("woff"), url("http://assets2.tedcdn.com/fonts/hn-075-n.ttf") format("truetype");
-    font-weight: 700;
-}
-@font-face {
-    font-family: "Helvetica Neue Custom";
-    src: url("http://assets2.tedcdn.com/fonts/hn-085-n.eot");
-    src: url("http://assets2.tedcdn.com/fonts/hn-085-n.eot?#iefix") format("embedded-opentype"), url("http://assets2.tedcdn.com/fonts/hn-085-n.woff") format("woff"), url("http://assets2.tedcdn.com/fonts/hn-085-n.ttf") format("truetype");
-    font-weight: 900;
-}
-
 
 
 @media only screen {
@@ -280,16 +255,7 @@ padding-left: 40px;
     color: rgba(0, 0, 0, 1);
     text-decoration: none;
 }
-.talk-hero__tools__icon {
-    width: 56px;
-    height: 76px;
-    line-height: 47px;
-    font-size: 76px;
-    display: block;
-    font-weight: 100;
-    margin-bottom: 5px;
-    padding-right: 30px;
-}
+
 }
 
 
@@ -326,18 +292,54 @@ counter-increment: ol-counter;
 display: inline-block;
 font-weight: 300;
 line-height: 2em;
-text-align: center;
+text-align: left;
 vertical-align: baseline;
-width: 3em;
+width: 2em;
 }
 
 
-.player .name {
-display: inline-block;
-font-size: 1.2em;
-font-weight: 300;
-vertical-align: middle;
+
+
+/*@media only screen and (max-width: 767px) {
+    .player .name {
+    display: inline-block;
+    font-size: 1.6em;
+    font-weight: 300;
+    vertical-align: middle;
+    }
+.talk-hero__tools__icon {
+    width: 56px;
+    height: 126px;
+    line-height: 47px;
+    font-size: 126px;
+    display: block;
+    font-weight: 100;
+    margin-bottom: 5px;
+    padding-right: 30px;
 }
+
+}*/
+
+@media only screen  {
+    .player .name {
+    display: inline-block;
+    font-size: 1.0em;
+    font-weight: 300;
+    vertical-align: middle;
+    }
+.talk-hero__tools__icon {
+    width: 56px;
+    height: 66px;
+    line-height: 47px;
+    font-size: 66px;
+    display: block;
+    font-weight: 100;
+    margin-bottom: 5px;
+    padding-right: 30px;
+}
+
+}
+
 
 .leaderboard {
 border-top: 1px solid #f1f1f1;
@@ -345,4 +347,21 @@ counter-reset: ol-counter;
 list-style-type: none;
 margin: 0 0 1.5em;
 padding: 0;
+}
+
+.load-more {
+  display: block;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.05);
+  text-align: center;
+  height: 60px;
+  line-height: 60px;
+  margin-bottom: 10px; }
+  .load-more:hover {
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.1); 
 }

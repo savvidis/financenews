@@ -8,11 +8,15 @@ Meteor.startup(function() {
 
 Meteor.methods({
   getHeadlines: function(argument) {
-    var concurrency = 5;
-    var Fiber2 = Meteor.npmRequire('fibers');
+    this.unblock();
+    var concurrency = 4;
     var Fiber =  Meteor.npmRequire('fibers');
-
+    var datems = Date.now();
+    var errindex = 0;
+    var error= {};
+    error[datems]= {};
     var list = [];
+    Meteor.bindEnvironment(
     async.series([
       function(callback) {
         async.eachLimit(sources, concurrency, function(newsource, next, err) {
@@ -30,19 +34,27 @@ Meteor.methods({
         callback();
       },
       function(callback) {
+        try {
         Updates.insert({
           'ms': Date.now(),
           'date': new Date()
         }, function() {
           console.log("Update done");
+          console.log("Errors");
+          console.log(error);
           return true;
         });
+        }
+        catch (e) {
+           console.log("Uh-oh, Error!: " + e + "\n using Update callback");
+        }
       }
-    ]);
+    ]));
 
+    ////////////////////////////////////////////////////////////
     // GET URLS FROM 
     // EACH OF THE DOMAINS
-    // --------------
+    ////////////////////////////////////////////////////////////
 
     function scrapHeadlines(newsource) {
       var options = {
@@ -52,7 +64,6 @@ Meteor.methods({
           'Cache-Control': 'max-age=0'
         }
       };
-    
 
       try {
       // Fiber(function() { 
@@ -105,7 +116,12 @@ Meteor.methods({
                 console.error(err);
               }
               index = +1;
-              ObjFromHeadline(element, index, $, newsource);
+              try {
+              ObjFromHeadline(element, index, $, newsource, error);
+              }
+              catch (e) {
+                console.log("Uh-oh, Error!: " + e + "\n using ObjFromHeadline");
+              }
               next();
             });
 
@@ -119,12 +135,17 @@ Meteor.methods({
       } catch (e) {
         // Got a network error, time-out or HTTP error in the 400 or 500 range.
           console.log("Uh-oh, ScrapeNexts Error!: " + e + " using " + newsource.url);
+          
+          error[datems][errindex].url = newsource.url;
+          error[datems][errindex].url.type = e;
+          error[datems][errindex].url.source = newsource.source;
+          errindex =+ 1;
         return false;
         
       }
     }
 
-    function ObjFromHeadline(element, index, $, newsource) {
+    function ObjFromHeadline(element, index, $, newsource, error) {
       var initialscore = 10;
       var datenow = new Date();
       var sourceurl = newsource.url;
@@ -143,8 +164,10 @@ Meteor.methods({
             return "No title available";
           }
         }
+      //////////////////////////////////////////////////////  
       // Scoring must take place here  element.attribs.href
-      // eg. Comments, Source, Gravity     
+      // eg. Comments, Source, Gravity
+      ///////////////////////////////////////////////////////     
       var title = hastitle(element); 
       function URLcorrection (url) {
       var correcturl;
@@ -176,17 +199,16 @@ Meteor.methods({
       // }).run();
     }
 
+    ////////////////////////////////////////////////////////////
     // Check the PoST 
     // Insert/Update
-    // --------------
-
+    ////////////////////////////////////////////////////////////
     function filePost(obj, newsource) {
-      Fiber2(function() {
+      Fiber(function() {
         findpost = null;
         async.series([
           function(callback) {
-            findpost = Posts.findOne({$or: [ {'url': obj.url},{'title':obj.title}] 
-            });
+            findpost = Posts.findOne({$or: [ {'url': obj.url},{'title':obj.title}]});
             callback();
           },
           function(callback) {
@@ -205,24 +227,27 @@ Meteor.methods({
               async.series([
                 function(callback) {
                   extracted = extraxtData(obj, newsource);
-                  var error ={};
-                  error.content = (extracted.PostContent === 'ERROR Didnt get content');
-                  error.url = !extracted.url;
-                  error.title = !extracted.title;
-                  console.log("url error:",error.url," title error:",error.title," content error:",error.content);
-                  callback(null,error);
+                  var fileError ={};
+                  if (extracted){
+                  fileError.content = (extracted.PostContent === 'ERROR Didnt get content');
+                  fileError.url = !extracted.url;
+                  fileError.title = !extracted.title;
+                  console.log("url error:",fileError.url," title error:",fileError.title," content error:",fileError.content);
+                }
+                  callback(null,fileError);
                 }],
-                function(err,error) {
-                  error = error[0];
-                  if (error.content || error.url || error.title ) {
+                function(err, fileError) {
+                  fileError = fileError[0];
+                  if (fileError.content || fileError.url || fileError.title ) {
                      console.log("There was an error I cannot insert"); 
                      console.log("=== === === === === === === === === === === === === === ");
                      console.log('\n');
                      return false;
                    }
                   else {
+                    if (extracted) {
                     insertPost(extracted);}
-
+                    }
                 });
           
             } else {
@@ -245,12 +270,31 @@ Meteor.methods({
 
     }
 
+    ////////////////////////////////////////////////////////////
     // GET DATA
     // FROM EACH POST
-    // --------------
+    ////////////////////////////////////////////////////////////
 
-    function extraxtData(obj, newsource) {
-       
+    function extraxtData(obj,newsource) {
+    
+    function checks(obj) {
+    var rules = [{source:"m.ft.com",word:["cms","2015"]},
+                 {source:"MorningStar",word:["articlenet",'xxxxxxx']}
+                ];
+    var res = true;
+     _.each(rules,function (rule) {
+      if (obj.source === rule.source) {
+        if (obj.url.indexOf(rule.word[0]) === -1 || obj.url.indexOf(rule.word[1]) === -1) {
+           console.log("+++++Check Error",obj.url);
+          res = false;
+        }    
+       } 
+      });
+      return res;
+      }
+
+    console.log("Check obj",checks(obj));
+    if (checks(obj)) {
     try {
         var result = Meteor.http.call('GET', obj.url,
          {
@@ -263,7 +307,7 @@ Meteor.methods({
         $ = cheerio.load(result.content);
         obj.PostDate = new Date(Date.parse(treatDate(newsource.subDateCssSelector, obj)));
         console.log(getString(newsource.commentCssSelector));
-        obj.CommentsNumber = !!(getString(newsource.commentCssSelector).match(/\d+/)) ? getString(newsource.commentCssSelector).replace('One', 1).match(/\d+/)[0] : "";
+        obj.CommentsNumber = !!(getString(newsource.commentCssSelector).match(/\d+/)) ? treatComments(newsource.commentCssSelector) : 0 ;
         obj.PostContent = getHTML(newsource.contentCssSelector);
         obj.Words = getWords(newsource.contentCssSelector);
         obj.Min = (obj.Words.length / 180).toFixed(1);
@@ -271,7 +315,7 @@ Meteor.methods({
         console.log('\n \n');
         console.log("======================Start============================");
         console.log('i am inside: ', obj.url);
-        console.log($(newsource.subDateCssSelector).text());
+        console.log("Comments",getString(newsource.commentCssSelector));
         console.log('Date: ', obj.PostDate);
         console.log('\n');
         console.log($(newsource.commentCssSelector).text());
@@ -284,10 +328,16 @@ Meteor.methods({
 
       } catch (e) {
         // Got a network error, time-out or HTTP error in the 400 or 500 range.
-          console.log("Uh-oh, ScrapeNexts Error!: " + e + " using " + newsource.url);
+          console.log("Uh-oh, ScrapeNexts Error!: " + e + " using " + obj.url);
+          error[datems][errindex] = {};
+          error[datems][errindex].url = obj.url;
+          error[datems][errindex].url.type = e;
+          error[datems][errindex].url.source = obj.source;
+          errindex =+ 1;
         return false;
         
       }
+      } 
       }
 
     //Helper
@@ -316,7 +366,8 @@ Meteor.methods({
       $('.feed-footer-wrapper').remove();
       $('.source').remove();
       $('.caption').remove();
-
+      $('.v_playerwrap').remove();
+      $('.aadsection_a1').remove();
       $('.storyvideo').remove();
       $('.shareArt').remove();
       $('.sharedaddy').remove();
@@ -336,18 +387,29 @@ Meteor.methods({
     function treatDate(node, obj) {
       var datenow = new Date();
       var str = getString(node);
-      str = str.substring(str.indexOf('-') + 1);
+      if (obj.source == 'MorningStar') {
+       str = str.substring(str.search(/\d/));
+      } 
+      else {
+        str = str.substring(str.indexOf('-') + 1);
+      }
       if (obj.source == 'Greenbackd') {
         str = str.substring(0, str.indexOf('by'));
       }
       console.log(str);
-      str = str.replace(/th|st|nd|rd|at|AM|am|pm|PM|by|Guest|Author|Tobias|Carlisle|\./g, "");
-      if (str) {
-        if (str.match(/\d+/g).length === 1) {
-          console.log("dddd");
-          str = str + " " + datenow.getFullYear();
-          return str;
-        }
+      str = str.replace(/th|st|nd|rd|at|AM|am|pm|PM|by|Guest|Author|Tobias|Carlisle|Email|Article|\||\r|\n|\./g, "").replace(/\s+/, " ");
+      str = str.trim();
+      if (!isNaN(Date.parse(str))) {return str;} 
+      console.log(Date.parse(str),str);
+      if (str) { str = chkyear(str);}
+      if (!isNaN(Date.parse(str))) {return str;} 
+
+        if (str) {
+          if (str.match(/\d+/g).length === 1) {
+            console.log("dddd");
+            str = str + " " + datenow.getFullYear();
+            return str;
+          }
         var year = null;
         for (var i = 0; i < str.match(/\d+/g).length; i++) {
           console.log(str.match(/\d+/g)[i].length);
@@ -363,11 +425,25 @@ Meteor.methods({
       return str;
     }
 
-    function treatComments(node) {
-      if (typeof csslist === 'object' && csslist !== null) {
-        return node[0];
+    function chkyear (str){
+      var year= str.split('-')[2];
+      console.log(str.split('-')[2].substring(0,2));
+      if (str.split('-')[2].substring(0,2)!=="20" ) {
+        str = str.split('-');
+        str[2]= "20"+year;
+        str = str.join("-");
       }
+      return str;
     }
+
+    function treatComments (node){
+
+      var str = getString(node);
+      console.log("comments inside",str);
+      if (str.search("of")) {str = str.substring(str.search("of"+2));}
+      return str.match(/\d+/)[0] ;
+
+    } 
 
     function getHTML(csslist) {
        var html;
@@ -403,7 +479,8 @@ Meteor.methods({
       console.log("3");
       return "";
     }
-
+  ////////////////////////////////////////////////////////////
+  // screaping method end  
   },
 
   getlastupdate: function() {
@@ -422,6 +499,13 @@ Meteor.methods({
       unique: true,
       dropDups: true
     }, function () {return true;});
+
+    Posts._ensureIndex({
+      PostDate: 1
+    }, {
+      unique: true,
+      dropDups: true
+    });
 
     Posts._ensureIndex({
       url: 1
