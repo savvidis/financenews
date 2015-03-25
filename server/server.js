@@ -284,7 +284,11 @@ Meteor.methods({
     var res = true;
      _.each(rules,function (rule) {
       if (obj.source === rule.source) {
-        if (obj.url.indexOf(rule.word[0]) === -1 || obj.url.indexOf(rule.word[1]) === -1) {
+        console.log(obj.url);
+        console.log(rule.word[0]);
+        console.log(obj.url.indexOf(rule.word[0]));
+        console.log(obj.url.indexOf(rule.word[0]) === -1 && obj.url.indexOf(rule.word[1]) === -1);
+        if (obj.url.indexOf(rule.word[0]) === -1 && obj.url.indexOf(rule.word[1]) === -1) {
            console.log("+++++Check Error",obj.url);
           res = false;
         }    
@@ -500,12 +504,6 @@ Meteor.methods({
       dropDups: true
     }, function () {return true;});
 
-    Posts._ensureIndex({
-      PostDate: 1
-    }, {
-      unique: true,
-      dropDups: true
-    });
 
     Posts._ensureIndex({
       url: 1
