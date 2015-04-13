@@ -1,29 +1,36 @@
+function UpdateGrav () {
+ 	Meteor.call('updateGrav', Router.current().data().posts, function (error, result) {
+	    if (error) throw error;
+	    Session.set('gravsort',true);
+	    console.log("update grav");
+	});
+}
 
-// Template.home.rendered = function () {
-// 	var index = 0 ;
-// 	function counterindex() {
-// 		return index += 1;
-// 	};
-// };
 
-Template.summary.helpers({
-	content: function () {
-		return this.PostContent;
-	}
-});
+Template.home.rendered = function () {
+ // if (!Session.get('gravsort')) {
+ //     Meteor.wrapAsync(UpdateGrav());
+ // }
+// window.scrollTo(0,Session.get('scrollposition')||0);
+// Meteor._reload.onMigrate('LiveUpdate', function(retry) {
+//       console.log("RELOADING LIVe UPDATE");
+//       return [false];
+//   }); 
+};
+
 
 Template.home.helpers({
 	'headlines': function() {
+		console.log(this);
+		return this.posts.fetch();
+  // var datenow = new Date();
+  // var start = new Date(Date.now() - 1000*60*60*24*7); 
+  // var findquery = { 'PostDate' : { $gte : start}};
+  // return Posts.find(findquery,this.findoptions).fetch();
+		
 	}
 });
-Template.home.rendered = function () {
-// window.scrollTo(0,Session.get('scrollposition')||0);
 
-Meteor._reload.onMigrate('LiveUpdate', function(retry) {
-      console.log("RELOADING LIVe UPDATE");
-      return [false];
-  }); 
-};
 
 Template.home.events({
 	'click .scrap': function() {
@@ -43,6 +50,7 @@ Template.home.events({
 
 	function update () {
 	initial_time = Date.now();
+	
 	Meteor.call('getHeadlines',function(error,result){
 			if (error) {console.log(error);}
 			else {
@@ -76,24 +84,35 @@ Template.home.events({
 		}	
 	});	
 	},
-	// 'click .update' : function () {
-	// 	Router.route.controller.PostsListController.extendedposts();
-	// }
+	'click .update' : function (e) {
+		e.preventDefault(); 
+		var start = new Date(Date.now() - 1000*60*60*24*7);  
+		params = Router.current().params.postsLimit || 50;
+		var options =  {sort:{gravitylevel:-1}, fields:{Words:0}, reactive: false};
+		// GroundPosts.clear();
+		Meteor.subscribe('CachePosts',options, function() {
+		});
+		Session.set('scrollposition', 0); 
+		subscribed = false;
+		// Meteor._reload.reload();
+		// Router.go(Router.routes.home.path({postsLimit: params}));
+		
+	}
 });
 
 Template.url.rendered = function () {
-
+	this.hours = Math.round((Math.abs(new Date().getTime() - Date.parse(this.PostDate))) / (1000 * 3600));
 };
 
 Template.url.helpers({
 	shorttitle: function() {
-		return this.title.substring(0,85);
+		return this.title.substring(0,90);
 	},
-	 hours : function () { return Math.round((Math.abs(new Date().getTime() - Date.parse(this.PostDate))) / (1000 * 3600));},
-	 hoursordays : true,
-	  minutesorhours: function() {
-	  	return ;
-	  }
+	 hours : function() {
+	 	 return Math.round((Math.abs(new Date().getTime() - Date.parse(this.PostDate))) / (1000 * 3600));},
+	 hoursordays : function() { return (Math.round((Math.abs(new Date().getTime() - Date.parse(this.PostDate))) / (1000 * 3600)) < 24);},
+	 days : function() {return Math.round(((Math.abs(new Date().getTime() - Date.parse(this.PostDate))) / (1000 * 3600)) / 24);}
+	  
    //    hoursordays: function() {
    //    	 	console.log(this.__proto__.hours());
    //    	 	console.log(this.__proto__.datenow.getTime() , Date.parse(this.__proto__.PostDate));
@@ -102,13 +121,29 @@ Template.url.helpers({
 });
 
 
-Template.summary.events({
-	'click .backpos': function (e) {
-	     e.preventDefault(); 
-		 Router.go(Router.routes.home.path({postsLimit: Session.get('postLimit')}));
+Template.summary.helpers({
+	content: function () {
+		return this.PostContent;
 	}
+});
+
+Template.summary.events({
+	'click .backup': function (e) {
+	     e.preventDefault(); 
+	     Meteor.call('upPost', this._id, function (error, result) {
+	     	if (error) throw error;
+	     });
+		 Router.go(Router.routes.content.path({title: Session.get('nextpost')}));
+	},
+	'click .backdown': function (e) {
+	     e.preventDefault(); 
+	     Meteor.call('downPost', this._id, function (error, result) {
+	     	if (error) throw error;
+	     });
+	     Router.go(Router.routes.content.path({title: Session.get('nextpost')}));
+		 // Router.go(Router.routes.home.path({postsLimit: Session.get('postLimit')}));
+	}	
 });
 
 
 // db.updates.remove({"date":{"$lt":ISODate("2015-03-10T16:51:28.980Z")}});
-// db.posts.remove({"PostDate":{"$lt":ISODate("2015-03-10T16:51:28.980Z")}});

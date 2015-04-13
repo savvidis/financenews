@@ -1,9 +1,9 @@
 Meteor.startup(function() {
-  request = Meteor.npmRequire('request');
   async = Meteor.npmRequire('async');
   cheerio = Meteor.npmRequire('cheerio');
 
 });
+
 
 
 Meteor.methods({
@@ -64,12 +64,18 @@ Meteor.methods({
           'Cache-Control': 'max-age=0'
         }
       };
+      var mainurl;
+      if (newsource.subdomain) {
+        mainurl = newsource.url + newsource.subdomain;
+       } 
+      else {
+       mainurl = newsource.url;
+      }
 
       try {
       // Fiber(function() { 
-        var result = HTTP.call("GET", newsource.url,
-                                {headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'}}
+        var result = HTTP.call("GET", mainurl,
+                                {headers: {'User-Agent': 'Googlebot/2.1; +http://www.google.com/bot.html'}}
         );
 
        body = result.content;
@@ -176,40 +182,37 @@ Meteor.methods({
       } else {
         correcturl = element.attribs.href;
       }
+         // ?catid=6&SID=google
 
       if (correcturl.substring(0, 9) === 'http://m.') {
          correcturl = "http://www." + correcturl.substring(9);
+         if ((correcturl.indexOf('?catid') !== -1)) {
+            var catid = parseInt(correcturl.substring(correcturl.indexOf('?catid')).match(/\d+/)[0]);
+            console.log("catid",catid,typeof(catid));
+            correcturl = correcturl.substring(0,correcturl.indexOf('?catid'));
+         }
       }
+
+
        return correcturl;
       }
 
-     
+     var score = function () {
+      if (typeof(catid) === 'number' && catid == 2) {
+          return  initialscore + 5 ;
+       } else
+       return initialscore;
+     };
       
       var correcturl = URLcorrection(element.attribs.href);
       console.log(index + ".Title : " + title + '\n' + '  URL : ' + correcturl);
       console.log("");
       
-      var prop =  {
-        datenow: function () {return new Date();},
-        timeDiff: function () {return Math.abs(this.datenow().getTime() - Date.parse(this.PostDate));},
-        hours : function () { return Math.round(this.timeDiff() / (1000 * 3600));},
-        minutes : function () {return Math.round(this.timeDiff() / (1000 * 60));},
-        days : function () {return Math.round((this.timeDiff() / (1000 * 3600 * 24)));},
-        updatedscore: function() {if (this.commentsfeed) {
-               return Math.round(this.score  * (0.8 + this.CommentsNumber/ 30));
-             }
-          else return this.score;
-        },
-        gravity: function() {return (Math.pow(this.updatedscore()*100,1+(this.quality/10))/Math.pow(Math.ceil(this.hours()+1), gravitylevel[this.type])).toFixed(2);}
-        };
-      var gravitylevel ={'blog':1.4,'news':1.6,'flashnews':1.8};
-
-        
       function Obj() {
         this.type= newsource.type;
         this.commentsfeed= newsource.commentsfeed;
         this.quality= newsource.quality;
-        this.score= initialscore;
+        this.score = score();
         this.source= newsource.source;
         this.title= title;
         this.url= correcturl;
@@ -217,8 +220,6 @@ Meteor.methods({
       }
 
       var obj = new Obj();
-      obj.__proto__ = new Object(prop); 
-      obj.gravitylevel= obj.gravity() || 100;
 
       return filePost(obj, newsource);
       // }).run();
@@ -287,6 +288,41 @@ Meteor.methods({
     }
 
     function insertPost(obj) {
+      ///Prototype - Gravity
+        var prop =  {
+        datenow: function () {return new Date();},
+        timeDiff: function () {return Math.abs(this.datenow().getTime() - Date.parse(this.PostDate));},
+        hours : function () { return Math.round(this.timeDiff() / (1000 * 3600));},
+        minutes : function () {return Math.round(this.timeDiff() / (1000 * 60));},
+        days : function () {return Math.round((this.timeDiff() / (1000 * 3600 * 24)));},
+        updatedscore: function() {if (this.commentsfeed) {
+               return Math.round(this.score  * (0.8 + (this.CommentsNumber||0) / 30) + parseFloat(this.Min));
+             }
+          else return this.score + parseFloat(this.Min);
+        },
+        gravity: function() {return (Math.pow(this.updatedscore()*100,1+(this.quality/10))/Math.pow(Math.ceil(this.hours()+1), gravitylevel[this.type])).toFixed(3);}
+        };
+        
+      var gravitylevel ={'blog':1.4,'news':1.6,'flashnews':1.8};
+
+  
+      obj.__proto__ = new Object(prop); 
+      obj.gravitylevel= parseFloat(obj.gravity()) || 100;
+
+      // console.log(obj.datenow());
+      // console.log(obj.PostDate);
+
+      // console.log(obj.timeDiff());
+      // console.log(obj.hours());
+      // console.log(obj.updatedscore());
+      // console.log(obj.commentsfeed);
+      // console.log(obj.CommentsNumber);
+      // console.log(obj.score);
+      // console.log(obj.quality);
+      // console.log(obj.type);
+      // console.log(obj.gravity());
+      ///Prototype - Gravity
+
       return Posts.insert(obj, function(err, res) {
         if (err) throw err;
         console.log('entered ',res);
@@ -309,10 +345,11 @@ Meteor.methods({
     var res = true;
      _.each(rules,function (rule) {
       if (obj.source === rule.source) {
-        console.log(obj.url);
-        console.log(rule.word[0]);
-        console.log(obj.url.indexOf(rule.word[0]));
-        console.log(obj.url.indexOf(rule.word[0]) === -1 && obj.url.indexOf(rule.word[1]) === -1);
+        console.log('\n \n');
+        console.log('Check rules for url', obj.url);
+        console.log('for 1st word in link',rule.word[0]," exist? ",obj.url.indexOf(rule.word[0]!=-1));
+        console.log('for 2nd word in link',rule.word[1]," exist? ",obj.url.indexOf(rule.word[1]!=-1));
+        console.log('both words dont exist? ', obj.url.indexOf(rule.word[0]) === -1 && obj.url.indexOf(rule.word[1]) === -1);
         if (obj.url.indexOf(rule.word[0]) === -1 && obj.url.indexOf(rule.word[1]) === -1) {
            console.log("+++++Check Error",obj.url);
           res = false;
@@ -328,7 +365,7 @@ Meteor.methods({
         var result = Meteor.http.call('GET', obj.url,
          {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            'User-Agent': 'Googlebot/2.1; +http://www.google.com/bot.html',
             'Cache-Control': 'max-age=0'
           }
         });
@@ -339,7 +376,7 @@ Meteor.methods({
         obj.CommentsNumber = !!(getString(newsource.commentCssSelector).match(/\d+/)) ? treatComments(newsource.commentCssSelector) : 0 ;
         obj.PostContent = getHTML(newsource.contentCssSelector);
         obj.Words = getWords(newsource.contentCssSelector);
-        obj.Min = (obj.Words.length / 180).toFixed(1);
+        obj.Min = parseFloat((obj.Words.length / 180).toFixed(1));
 
         console.log('\n \n');
         console.log("======================Start============================");
@@ -389,8 +426,10 @@ Meteor.methods({
 
     function treatContent(html) {
       $ = cheerio.load(html);
-
+      $('.page-title').remove();
       $('.related-links-container').remove();
+      $('.pattern__meta').remove();
+      $('.content-extras').remove();
       $('.popular-video').remove();
       $('.feed-footer-wrapper').remove();
       $('.source').remove();
@@ -428,10 +467,10 @@ Meteor.methods({
       console.log(str);
       str = str.replace(/th|st|nd|rd|at|AM|am|pm|PM|by|Guest|Author|Tobias|Carlisle|Email|Article|\||\r|\n|\./g, "").replace(/\s+/, " ");
       str = str.trim();
-      if (!isNaN(Date.parse(str))) {return str;} 
-      console.log(Date.parse(str),str);
-      if (str) { str = chkyear(str);}
-      if (!isNaN(Date.parse(str))) {return str;} 
+      if (!isNaN(Date.parse(str)) && Date.parse(str)> 1400004654180) {return str;} 
+      console.log('Before year ',Date.parse(str),str);
+      if (str && str.indexOf('-') != -1) { str = chkyear(str);}
+      if (!isNaN(Date.parse(str)) && Date.parse(str)> 1400004654180) {return str;} 
 
         if (str) {
           if (str.match(/\d+/g).length === 1) {
@@ -522,57 +561,76 @@ Meteor.methods({
   },
 
   cleanagent: function() {
-    Posts._ensureIndex({
-      title: 1
-    }, {
-      unique: true,
-      dropDups: true
-    }, function () {return true;});
+    // Posts._ensureIndex({
+    //   title: 1
+    // }, {
+    //   unique: true,
+    //   dropDups: true
+    // }, 
+    // function () {return true;});
 
+    // Posts._ensureIndex({
+    //   url: 1
+    // }, {
+    //   unique: true,
+    //   dropDups: true
+    // });
 
-    Posts._ensureIndex({
-      url: 1
-    }, {
-      unique: true,
-      dropDups: true
-    });
-
-    Posts.remove( { url: {$exists: false} } );
+  Posts.remove( { url: {$exists: false} } );
+  
   },
   updateGrav: function(posts) {
     this.unblock();
     _.each(posts,function(post){
-        var prop =  {
+      var prop =  {
         datenow: function () {return new Date();},
         timeDiff: function () {return Math.abs(this.datenow().getTime() - Date.parse(this.PostDate));},
         hours : function () { return Math.round(this.timeDiff() / (1000 * 3600));},
         minutes : function () {return Math.round(this.timeDiff() / (1000 * 60));},
         days : function () {return Math.round((this.timeDiff() / (1000 * 3600 * 24)));},
-        updatedscore: function() {if (this.commentsfeed) {
-               return Math.round(this.score  * (0.8 + this.CommentsNumber/ 30));
-             }
-          else return this.score;
-        },
-        gravity: function() {return (Math.pow(this.updatedscore()*100,1+(this.quality/10))/Math.pow(Math.ceil(this.hours()+1), gravitylevel[this.type])).toFixed(2);}
+        updatedscore: function() { 
+          if (this.commentsfeed) {
+            return Math.round(this.score  * (0.8 + this.CommentsNumber/ 30) + parseFloat(this.Min));
+          }
+        else 
+          return this.score + parseFloat(this.Min);
+          },
+        gravity: function() {return (Math.pow(this.updatedscore(),1+(this.quality/10))/Math.pow(Math.ceil(this.hours()/5+1), gravitylevel[this.type])).toFixed(3);}
         };
-      var gravitylevel ={'blog':1.4,'news':1.6,'flashnews':1.8};
-
-      post.__proto__ = new Object(prop);
-      console.log(post);
-      console.log('grav',post.gravity());
-
-      Posts.update({_id:post._id},{$set:{gravitylevel:post.gravity()}});
+      var gravitylevel ={'blog':1.2,'news':1.6,'flashnews':1.8};
+      post.__proto__  = new Object(prop);
+      try {
+       Posts.update({_id:post._id},{$set:{gravitylevel:parseFloat(post.gravity())}}, function(){
+        // console.log(post.gravitylevel,post.gravity(),parseFloat(post.gravity()));
+        // console.log(post.updatedscore());
+        // console.log(post.hours());
+       });
+      } catch (e) {
+         console.log("Uh-oh, Error!: " + e +" in Gravity update");
+       }
     });
   },
   cleanPosts: function() {
     var removeObj = {
       // 'source': 'abnormalreturns.com/'
     };
+
     Posts.remove(removeObj, function(result, error) {
       if (error) {
         console.log(error);
       } else
         console.log('removed' + result);
     });
+  },
+  upPost : function(id) { 
+    this.unblock();
+    Posts.update({_id:id},{ $inc: { score: +1}});
+  },
+  downPost : function(id) { 
+    this.unblock();
+    Posts.update({_id:id},{ $inc: { score: -1}});
+  },
+  findposts: function(search,options) {
+   return Posts.find(search,options).fetch();
   }
 });

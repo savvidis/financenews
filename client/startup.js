@@ -31,9 +31,7 @@ function update() {
   });
 }
 
-if (Meteor.isClient) {
- 
-}
+
 
 Meteor.startup(function() {
   if (!Updates.find().fetch()) {
@@ -57,6 +55,49 @@ Meteor.startup(function() {
     // 	}	
     // });	
   }
+
+  Accounts.ui.config({
+    passwordSignupFields: 'EMAIL_ONLY'
+  });
+
+  AccountsEntry.config({
+    logo: '',
+    homeRoute: '/',
+    dashboardRoute: '/',
+    profileRoute: '/profile',
+    verifyEmail: true,
+    // verifyEmailRoute: '/checkmail',
+    language: 'en',
+    showSignupCode: false,
+    extraSignUpFields: [
+    {
+      field: "name",
+      label: "Your Username",
+      type: "text",
+      required: true
+    }
+    ]
+  });
+
+
+  var sub = [];
+  subscribed = false;
+  Tracker.autorun(function() {
+    if (!subscribed) {
+      Meteor.subscribe('userData',function() {
+
+      // Meteor.subscribe('newsPosts',{fields:{Words:0,PostContent:0}}, function(err,res) {
+      //   if (err) throw err;
+      //   console.log(res);
+      // });
+      Meteor.subscribe('updates');
+      subscribed = true;
+      return subscribed;  
+      });
+
+    }
+  });
+
 });
 
 
@@ -66,19 +107,26 @@ Meteor.startup(function() {
 // }
 
 if (Meteor.isClient) {
-  // var updated = Session.get('updated');
-  // Meteor.bindEnvironment(
-  //   Meteor.setInterval(
-  //     function(updated) {
-  //       if (Meteor.status().connected) {
-  //         console.log(Date.now() / 1000 - Session.get('updated') / 1000);
-  //         if (Date.now() - Session.get('updated') > 600000) {
-  //           updated = Date.now();
-  //           console.log("updating");
-  //           update();
-  //           return true;
-  //         }
-  //       }
-  //     }, 100000));
+  Accounts.ui.config({
+    passwordSignupFields: 'EMAIL_ONLY'
+  });
+  
+  AccountsEntry.config({
+    logo: '',
+    homeRoute: '/',
+    dashboardRoute: '/',
+    profileRoute: '/',
+    verifyEmail: true,
+    language: 'en',
+    showSignupCode: false,
+    extraSignUpFields: [
+    {
+      field: "name",
+      label: "Your Username",
+      type: "text",
+      required: true
+    }
+    ]
+  });
 
 }

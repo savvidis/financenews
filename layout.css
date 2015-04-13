@@ -6,7 +6,7 @@ body {
 }
 
 .linkrow {
-	padding: 10px;
+	padding: 5px;
 	font-family: Verdana,Geneva,sans-serif;
 font-size: 10pt;
 }
@@ -25,7 +25,7 @@ color: #828282;
 }
 
 .intitle {
-	padding-bottom: 20px;
+	padding-bottom: 10px;
 }
 .newslist {
 	padding:1%;
@@ -56,8 +56,8 @@ padding-left: 0px;
 
 @font-face {
     font-family: "icons";
-    src: url('http://assets2.tedcdn.com/fonts/icons.eot?7f00dc920bd6839b3c2a5a762264badb');
-    src: url('http://assets2.tedcdn.com/fonts/icons.eot?7f00dc920bd6839b3c2a5a762264badb') format("embedded-opentype"), url('http://assets2.tedcdn.com/fonts/icons.woff?938d279ee1e076e431c0723701d81e58') format("woff"), url('http://assets2.tedcdn.com/fonts/icons.ttf?306779318fb0d229f7d2a60abafad63d') format("truetype");
+    src: url('fonts/icons.eot');
+    src: url('fonts/icons.eot') format("embedded-opentype"), url('fonts/icons.woff?938d279ee1e076e431c0723701d81e58') format("woff");
     font-weight: normal;
     font-style: normal;
 }
@@ -282,8 +282,10 @@ background-color: #fefff4;
 border-left: #eb5f3a 4px solid;
 }
 
+.counterspan {
+ padding-left:5px;
+}
 .counter {
-
 }
 .counter:before {
 color: #999;
@@ -294,7 +296,6 @@ font-weight: 300;
 line-height: 2em;
 text-align: left;
 vertical-align: baseline;
-width: 2em;
 }
 
 

@@ -11,7 +11,7 @@
   ],
 
   // Install MongoDB in the server, does not destroy local MongoDB on future setup
-  "setupMongo": false,
+  "setupMongo": true,
 
   // WARNING: Node.js is required! Only skip if you already have Node.js installed on server.
   "setupNode": true,
@@ -30,15 +30,20 @@
 
   // Configure environment
   "env": {
-    "PORT":3002,
-    "ROOT_URL": "http://localhost"
-    // "MONGO_URL": "mongodb://127.0.0.1:27017/fnews",
+    "PORT":8000,
+    "ROOT_URL": "http://188.166.52.166",
+    "MONGO_URL": "mongodb://127.0.0.1:27017/fnews",
+    "CLUSTER_WORKERS_COUNT":"auto",
+    // "CLUSTER_DISCOVERY_URL":"mongodb://127.0.0.1:27017/fnews",
+    // "CLUSTER_SERVICE":"web",
+    // "CLUSTER_ENDPOINT_URL":"188.166.52.166:8000",
+
     // "MONGO_OPLOG_URL":"mongodb://oplogger:pwd@127.0.0.1:27017/local?authSource=admin",
-    // "DDP_DEFAULT_CONNECTION_URL":"http://188.166.52.166:3002",
+    "DDP_DEFAULT_CONNECTION_URL":"http://188.166.52.166:8000"
     // "DISABLE_WEBSOCKETS": "1"
    },
 
   // Meteor Up checks if the app comes online just after the deployment
   // before mup checks that, it will wait for no. of seconds configured below
-  "deployCheckWaitTime": 40
+  "deployCheckWaitTime": 50
 }
