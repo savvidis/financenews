@@ -21,7 +21,7 @@ Template.home.rendered = function () {
 
 Template.home.helpers({
 	'headlines': function() {
-		console.log(this);
+		// console.log(this);
 		return this.posts.fetch();
   // var datenow = new Date();
   // var start = new Date(Date.now() - 1000*60*60*24*7); 
@@ -88,16 +88,26 @@ Template.home.events({
 		e.preventDefault(); 
 		var start = new Date(Date.now() - 1000*60*60*24*7);  
 		params = Router.current().params.postsLimit || 50;
-		var options =  {sort:{gravitylevel:-1}, fields:{Words:0}, reactive: false};
-		// GroundPosts.clear();
+		var options =  {sort:{gravitylevel:-1}, limit:params, fields:{Words:0}, reactive: false};
+		GroundPosts = new Ground.Collection(Posts);
 		Meteor.subscribe('CachePosts',options, function() {
+			Posts.find(start,options);
 		});
 		Session.set('scrollposition', 0); 
 		subscribed = false;
 		// Meteor._reload.reload();
-		// Router.go(Router.routes.home.path({postsLimit: params}));
+		Router.go(Router.routes.home.path({postsLimit: params}));
+		
+	},
+	'click .tinder' : function (e) {
+		e.preventDefault(); 
+		Session.set('btb', true);
+		// Meteor._reload.reload();posnext
+	    Router.go(Router.routes.content.path({title:$('body > div > div.leaderboard > a:nth-child(1) > div > div > div.name > span.counterspan').text(),btb:true}));
+
 		
 	}
+
 });
 
 Template.url.rendered = function () {
@@ -124,6 +134,12 @@ Template.url.helpers({
 Template.summary.helpers({
 	content: function () {
 		return this.PostContent;
+	},
+	shortContent: function() {
+		console.log(this.Min);
+		var post = this.PostContent;
+		var limit = Math.max(Math.min(parseFloat(this.Min)*250,3200),1000);
+		return post.substring(0, limit);
 	}
 });
 
@@ -133,15 +149,22 @@ Template.summary.events({
 	     Meteor.call('upPost', this._id, function (error, result) {
 	     	if (error) throw error;
 	     });
+	     if (Session.get('btb')) {
 		 Router.go(Router.routes.content.path({title: Session.get('nextpost')}));
+		 } else {
+		 Router.go(Router.routes.home.path({postsLimit: Session.get('postLimit')}));
+	 	}
 	},
 	'click .backdown': function (e) {
 	     e.preventDefault(); 
 	     Meteor.call('downPost', this._id, function (error, result) {
 	     	if (error) throw error;
 	     });
-	     Router.go(Router.routes.content.path({title: Session.get('nextpost')}));
-		 // Router.go(Router.routes.home.path({postsLimit: Session.get('postLimit')}));
+	     if (Session.get('btb')) {
+	     Router.go(Router.routes.content.path({title: Session.get('nextpost')})); 
+	 	} else {
+		 Router.go(Router.routes.home.path({postsLimit: Session.get('postLimit')}));
+	 	}
 	}	
 });
 

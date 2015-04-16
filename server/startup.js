@@ -58,7 +58,7 @@ function ScrapInteval () {
 // var connectHandler = WebApp.connectHandlers; // get meteor-core's connect-implementation
 
 Meteor.startup(function() {
-if (Meteor.isServer) {
+
   //allow connections
   // connectHandler.use(function (req, res, next) {
   //     res.header("Access-Control-Allow-Origin", "*");
@@ -71,5 +71,12 @@ if (Meteor.isServer) {
   Meteor.wrapAsync(ScrapInteval());
   Meteor.wrapAsync(updategravInterval());
 
-}
+
+
+Accounts.validateNewUser(function (user) {
+  console.log(user);
+  if (user.profile.invitation === "betafornow")
+    return true;
+  throw new Meteor.Error(403, "Must have an invitation");
+});
 });

@@ -64,15 +64,21 @@ Meteor.startup(function() {
     logo: '',
     homeRoute: '/',
     dashboardRoute: '/',
-    profileRoute: '/profile',
+    profileRoute: '/',
     verifyEmail: true,
     // verifyEmailRoute: '/checkmail',
     language: 'en',
     showSignupCode: false,
     extraSignUpFields: [
     {
-      field: "name",
-      label: "Your Username",
+      field: "username",
+      label: "Username",
+      type: "text",
+      required: true
+    },
+    {
+      field: "invitation",
+      label: "Invitation Code",
       type: "text",
       required: true
     }
@@ -105,28 +111,3 @@ Meteor.startup(function() {
 // if (Meteor.isServer) {
 
 // }
-
-if (Meteor.isClient) {
-  Accounts.ui.config({
-    passwordSignupFields: 'EMAIL_ONLY'
-  });
-  
-  AccountsEntry.config({
-    logo: '',
-    homeRoute: '/',
-    dashboardRoute: '/',
-    profileRoute: '/',
-    verifyEmail: true,
-    language: 'en',
-    showSignupCode: false,
-    extraSignUpFields: [
-    {
-      field: "name",
-      label: "Your Username",
-      type: "text",
-      required: true
-    }
-    ]
-  });
-
-}

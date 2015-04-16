@@ -22,7 +22,7 @@
       <div class="navbar-header">
         <a class="navbar-brand" href="{{pathFor 'home'}}">Optimal Noise</a>
    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
-         {{#if currentUser}} {{ currentUser.profile.name }} {{else}} Menu{{/if}}
+         {{#if currentUser}} {{ currentUser.profile.username }} {{else}} Menu{{/if}}
         </button>
          </div>
 
@@ -36,7 +36,7 @@
         {{else}}
         <div class="collapse navbar-collapse" id="main-nav">
          <div class="navbar-right">
-            <a href="{{ pathFor 'About' }}" class="btn btn-default navbar-btn">About</a>
+            <a href="{{ pathFor 'aboutus' }}" class="btn btn-default navbar-btn">About</a>
             <a href="{{ pathFor 'entrySignIn' }}" class="btn btn-default navbar-btn">Sign in</a>
          </div>
         </div>
@@ -55,8 +55,9 @@
   <footer>
     <div class="container">
       <p class="text-center text-muted">
-        &copy; Copyright {{ siteTitle }}
-      </p>
+    
+
+     </p>
     </div>
   </footer>
 </template>
